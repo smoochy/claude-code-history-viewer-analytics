@@ -81,6 +81,7 @@ export function normalizeSession(
   let sessionId = "";
   let projectPath = "";
   let summaryTitle = "";
+  let customTitle = "";
   let firstUserText = "";
   let createdAt = "";
   let updatedAt = "";
@@ -104,11 +105,14 @@ export function normalizeSession(
         summaryTitle = val;
       }
     }
-    // Branch session title set by /branch command
+    // User-set title, written by /rename and by /branch. Tracked separately
+    // from the generated titles because Claude Code appends a fresh ai-title on
+    // most turns, so a rename is almost always followed by a later ai-title
+    // record; sharing one variable would let the generated title win on order.
     if (entry.type === "custom-title" && typeof (entry as any).customTitle === "string") {
       const val = (entry as any).customTitle;
       if (!isCommandTitle(val)) {
-        summaryTitle = val;
+        customTitle = val;
       }
     }
     // Branch detection: forkedFrom appears on every entry in a branch session
@@ -148,7 +152,7 @@ export function normalizeSession(
   }
 
   const resolvedId = sessionId || fallbackSessionId;
-  const title = summaryTitle || firstUserText || "Untitled session";
+  const title = customTitle || summaryTitle || firstUserText || "Untitled session";
   const projectName = projectPath ? path.basename(projectPath) : "Unknown project";
 
   let calculatedCost = 0;

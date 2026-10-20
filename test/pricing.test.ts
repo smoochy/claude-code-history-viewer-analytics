@@ -11,7 +11,8 @@ test("priceForModel matches opus by substring", () => {
 test("priceForModel distinguishes current and legacy Claude models", () => {
   assert.equal(priceForModel("claude-opus-4-1").output, 75);
   assert.equal(priceForModel("claude-opus-4-8").output, 25);
-  assert.deepEqual(priceForModel("claude-sonnet-5"), { input: 2, output: 10, cacheWrite: 2.5, cacheRead: 0.2 });
+  // Sonnet 5 moved to the higher rate on 2026-09-01; see `beforeSonnet5Increase`.
+  assert.deepEqual(priceForModel("claude-sonnet-5"), { input: 3, output: 15, cacheWrite: 3.75, cacheRead: 0.3 });
   assert.equal(priceForModel("claude-3-5-haiku-20241022").input, 0.8);
 });
 

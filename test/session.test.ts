@@ -104,6 +104,44 @@ test("reads custom-title as session title", () => {
   assert.equal(meta.title, "test (Branch)");
 });
 
+// Claude Code rewrites the ai-title on almost every turn and appends it to the
+// end of the JSONL, so a user rename is nearly always followed by a later
+// ai-title record. The user's own name has to outrank the generated one
+// regardless of where each lands in the file.
+test("custom-title outranks a later ai-title", () => {
+  const entries = [
+    { type: "ai-title", aiTitle: "twentythree-seo-pages batch 6", sessionId: "s1" },
+    { type: "custom-title", customTitle: "batch 6", sessionId: "s1" },
+    { type: "user", sessionId: "s1", timestamp: "2026-06-26T10:00:00Z",
+      message: { role: "user", content: "hello" } },
+    { type: "ai-title", aiTitle: "Missing AI_GATEWAY environment variables", sessionId: "s1" },
+  ];
+  const { meta } = normalizeSession(entries, "s1");
+  assert.equal(meta.title, "batch 6");
+});
+
+test("custom-title outranks a later summary", () => {
+  const entries = [
+    { type: "custom-title", customTitle: "batch 6", sessionId: "s1" },
+    { type: "user", sessionId: "s1", timestamp: "2026-06-26T10:00:00Z",
+      message: { role: "user", content: "hello" } },
+    { type: "summary", summary: "Gateway env fixed, retry KB calls", sessionId: "s1" },
+  ];
+  const { meta } = normalizeSession(entries, "s1");
+  assert.equal(meta.title, "batch 6");
+});
+
+test("the last ai-title still wins when the user never renamed", () => {
+  const entries = [
+    { type: "ai-title", aiTitle: "Early guess", sessionId: "s1" },
+    { type: "user", sessionId: "s1", timestamp: "2026-06-26T10:00:00Z",
+      message: { role: "user", content: "hello" } },
+    { type: "ai-title", aiTitle: "Refined guess", sessionId: "s1" },
+  ];
+  const { meta } = normalizeSession(entries, "s1");
+  assert.equal(meta.title, "Refined guess");
+});
+
 test("filters out local-command only messages and ignores them for titles", () => {
   const entries = [
     {
