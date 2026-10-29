@@ -267,7 +267,7 @@
     "@types/vscode": "^1.85.0",
     "@vscode/codicons": "^0.0.45",
     "@vscode/vsce": "^2.32.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.28.0",
     "typescript": "^5.4.0"
   },
   "dependencies": {
